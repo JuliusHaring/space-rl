@@ -3,7 +3,7 @@ from copy import deepcopy
 import sys
 
 from environment.base import Environment
-from environment.types import actions_dict, states_dict, action_space
+from environment.types import actions_dict, states_dict
 
 
 class RLAgent(ABC):
@@ -21,16 +21,6 @@ class RLAgent(ABC):
     def render_best(self):
         print("Best reward: " + str(self.best_env_reward))
         self.best_env.render()
-
-    @abstractmethod
-    def get_action_space(self) -> action_space:
-        """
-        Give back a list of all possible actions to take.
-
-        Returns:
-        - A list of possible actions.
-        """
-        ...
 
     @abstractmethod
     def select_action(self, state: states_dict) -> actions_dict:

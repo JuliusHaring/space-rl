@@ -1,6 +1,7 @@
+from itertools import product
 from environment.base import Environment
 from environment.models import MovableObject
-from environment.types import float3d, episode_state
+from environment.types import float3d, episode_state, action_space
 import numpy as np
 
 import random
@@ -24,6 +25,9 @@ class P2PEnvironment(Environment):
             random.uniform(-self.size, self.size),
             random.uniform(-self.size, self.size),
         )
+
+    def get_action_space(self) -> action_space:
+        return list(product(range(-1, 2), repeat=3))
 
     def episode_finished(self) -> episode_state:
         target = next(obj for obj in self.objects if not obj.is_movable)

@@ -1,13 +1,12 @@
 import sys
 import json
-from itertools import product
 from matplotlib import cm
 
 import numpy as np
 import matplotlib.pyplot as plt
 from agents.base import RLAgent
 from environment.base import Environment
-from environment.types import actions_dict, states_dict, action_space
+from environment.types import actions_dict, states_dict
 
 
 class QLearningAgent(RLAgent):
@@ -44,7 +43,7 @@ class QLearningAgent(RLAgent):
 
         # Ensure there is an entry for this state string in the Q-table
         if state_str not in self.q_table:
-            self.q_table[state_str] = [-sys.maxsize] * len(self.get_action_space())
+            self.q_table[state_str] = [-sys.maxsize] * len(self.env.get_action_space())
 
         return state_str
 
@@ -62,7 +61,7 @@ class QLearningAgent(RLAgent):
 
         # Convert the action to its index in the action space
         try:
-            action_index = self.get_action_space().index(tuple(flattened_action))
+            action_index = self.env.get_action_space().index(tuple(flattened_action))
         except ValueError:
             # This would occur if an action is taken
             # that's not in the predefined action space
@@ -70,20 +69,19 @@ class QLearningAgent(RLAgent):
 
         return action_index
 
-    def get_action_space(self) -> action_space:
-        return list(product(range(-1, 2), repeat=3))
-
     def select_action(self, state: states_dict) -> actions_dict:
         state_index = self.state_to_index(state)
         if np.random.rand() < self.epsilon:
             # Explore: select a random action
             action = self.get_action_space()[
-                np.random.randint(0, len(self.get_action_space()))
+                np.random.randint(0, len(self.env.get_action_space()))
             ]
         else:
             # Exploit: select the action with the highest Q-value for the current state
             action_index = np.argmax(self.q_table[state_index])  # This returns an index
-            action = self.get_action_space()[action_index]  # Convert index to action
+            action = self.env.get_action_space()[
+                action_index
+            ]  # Convert index to action
         # Convert the action tuple back into the actions_dict format
         action_dict = {list(state.keys())[0]: action}
         return action_dict

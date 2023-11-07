@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from environment.models import MovableObject
-from environment.types import states_dict, actions_dict, episode_state
+from environment.types import states_dict, actions_dict, episode_state, action_space
 
 
 class Environment(ABC):
@@ -14,6 +14,16 @@ class Environment(ABC):
         self.t = 0
         self.dt = dt
         self.trajectories = [[] for _ in objects]
+
+    @abstractmethod
+    def get_action_space(self) -> action_space:
+        """
+        Give back a list of all possible actions to take.
+
+        Returns:
+        - A list of possible actions.
+        """
+        ...
 
     @abstractmethod
     def episode_finished(self) -> episode_state:
