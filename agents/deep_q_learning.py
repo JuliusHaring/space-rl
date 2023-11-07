@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -45,6 +46,7 @@ class DeepQLearningAgent(QLearningAgent):
         self.model = DQN(state_size, action_size)
         self.optimizer = optim.Adam(self.model.parameters(), lr=alpha)
         self.epsilon = epsilon
+        self.loss_history = None
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -74,6 +76,9 @@ class DeepQLearningAgent(QLearningAgent):
         if len(self.memory) < self.batch_size:
             return
         minibatch = random.sample(self.memory, self.batch_size)
+
+        loss_accumulated = 0
+
         for state, action, reward, next_state, done in minibatch:
             state = torch.FloatTensor(state)
             next_state = torch.FloatTensor(next_state)
@@ -89,11 +94,22 @@ class DeepQLearningAgent(QLearningAgent):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            loss_accumulated += loss.item()
 
         if self.epsilon > 0.01:
             self.epsilon *= 0.995
 
+        return loss_accumulated / self.batch_size
+
+    def render_loss(self):
+        plt.plot(self.loss_history)
+        plt.title("Loss over episodes")
+        plt.xlabel("Episode")
+        plt.ylabel("Loss")
+        plt.show()
+
     def train(self, total_episodes=100):
+        self.loss_history = []
         agent_name = next(obj for obj in self.env.objects if obj.is_movable).name
         for episode in range(total_episodes):
             state = self.env.reset()
@@ -108,8 +124,12 @@ class DeepQLearningAgent(QLearningAgent):
                 self.remember(state, action_idx, reward, next_state, done)
                 state = next_state
                 total_reward += reward
-                self.replay()
+                loss = self.replay()
+            self.loss_history.append(loss)
+            self.evaluate_best_env(environment=self.env, reward=reward)
             print(f"Episode: {episode}, Total reward: {total_reward}")
+        self.render_best()
+        self.render_loss()
 
 
 # Example usage
