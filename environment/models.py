@@ -16,9 +16,9 @@ class MovableObject(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.__dict__["_initial_state"] = self.get_state()
+        self.__dict__["_initial_state"] = self._get_state()
 
-    def get_state(self) -> tuple[float3d, float3d]:
+    def _get_state(self) -> tuple[float3d, float3d]:
         return (self.pos_x, self.pos_y, self.pos_z), (
             self.vel_x,
             self.vel_y,

@@ -23,19 +23,16 @@ class Environment(ABC):
     def _calculate_reward(self) -> float:
         ...
 
-    def reset(self):
-        states = []
+    def reset(self) -> states_dict:
         for i, obj in enumerate(self.objects):
             obj.reset()
             self.trajectories[i] = []
-            states.append(obj.get_state())
         self.t = 0
-        return states
+        return self.get_states()
 
-    def _get_states(self) -> states_dict:
-        return {obj.name: obj.get_state() for obj in self.objects}
+    def get_states(self) -> states_dict:
+        return {obj.name: obj._get_state() for obj in self.objects}
 
-    @abstractmethod
     def _add_visuals(self, ax: Axes):
         ...
 
@@ -44,21 +41,21 @@ class Environment(ABC):
         ax = fig.add_subplot(111, projection="3d")
 
         for obj, trajectory in zip(self.objects, self.trajectories):
-            trajectory = np.array(
-                trajectory
-            )  # Convert trajectory to NumPy array for easy slicing
-            ax.plot(
-                trajectory[:, 0],
-                trajectory[:, 1],
-                trajectory[:, 2],
-                label=f"Trajectory of object {obj.name}",
-            )
-            # Plot the current position with a different marker
-            ax.scatter(
-                *trajectory[-1],
-                label=f"Current position of object {obj.name}",
-                marker="o",
-            )
+            if len(trajectory) > 0:
+                trajectory = np.array(trajectory)
+
+                ax.plot(
+                    trajectory[:, 0],
+                    trajectory[:, 1],
+                    trajectory[:, 2],
+                    label=f"Trajectory of object {obj.name}",
+                )
+                # Plot the current position with a different marker
+                ax.scatter(
+                    *trajectory[-1],
+                    label=f"Current position of object {obj.name}",
+                    marker="o",
+                )
 
         self._add_visuals(ax=ax)
 
@@ -83,11 +80,11 @@ class Environment(ABC):
             if obj.is_movable:  # Check if the object is movable and thus controllable
                 action = actions.get(obj.name)
                 obj._update_state(action=action, time_step=self.dt)
-            # Append both position and velocity to the trajectories and next_states
-            state = obj.get_state()
-            self.trajectories[i].append(state[0])
+                # Append both position and velocity to the trajectories and next_states
+                state = self.get_states()[obj.name]
+                self.trajectories[i].append(state[0])
         self.t += self.dt
         done, success = self.episode_finished()
         reward = self._calculate_reward()  # if success else 0
-        next_states = self._get_states()
+        next_states = self.get_states()
         return next_states, reward, done, info

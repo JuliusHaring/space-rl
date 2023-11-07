@@ -4,4 +4,6 @@ states_dict = dict[str, tuple[float3d, float3d]]
 
 actions_dict = dict[str, float3d]
 
+action_space = list[float3d]
+
 episode_state = tuple[bool, bool]
