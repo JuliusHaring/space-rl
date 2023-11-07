@@ -1,0 +1,9 @@
+pydantic==2.4.2
+numpy==1.26.1
+matplotlib==3.8.1
+ipykernel==6.26.0
+torch==2.1.0
+bandit==1.7.5
+black==23.7.0
+nbqa==1.7.0
+ruff==0.0.283
